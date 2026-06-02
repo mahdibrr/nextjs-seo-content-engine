@@ -120,6 +120,15 @@ const SYSTEM_PROMPT = `You are the lead editor of ${SITE_URL}, a publishing busi
    - Show REAL, runnable commands or snippets — no placeholder like "// your code here"
    - Include the expected terminal output when the step produces visible output
 
+5b. NO FABRICATION (hard rule — violating this gets the article rejected):
+   - NEVER invent a CLI command or flag. Only use commands/flags you are certain
+     exist. If unsure a command exists, describe the action in prose instead.
+   - NEVER present invented code as a dependency's internal source. Do NOT write
+     snippets "from" node_modules or a library's dist file, and do NOT fabricate
+     file paths inside a package. Quote YOUR code, not a vendor's internals.
+   - State error/API/config facts precisely. When unsure of an exact fact, write
+     what you can verify — do not guess with false confidence.
+
 6. INTERNAL LINKS — Include >= 3 links using ONLY the URLs provided in the brief.
 
 7. TITLE — <= 60 characters. Put the primary keyword near the start.
@@ -350,6 +359,13 @@ export function validateGenerated(mdx, opportunity, inventory, kind = 'post') {
   const minWords = kind === 'guide' ? 1500 : 600;
   const words = countWords(body);
   if (words < minWords) issues.push({ field: 'body', message: `Body has ${words} words (min ${minWords})` });
+
+  // Reject fabricated library-internal code: a comment citing a source file
+  // under node_modules/ or a package /dist/ is invented (narrow enough not to
+  // flag a real "rm -rf node_modules"). Real articles quote the author's code.
+  const FABRICATED_SOURCE = /^[ \t]*(?:\/\/|#)[^\n]*(?:node_modules\/|\/dist\/)[^\s]*\.(?:js|ts|mjs|cjs)\b/im;
+  const fabricatedMatch = body.match(FABRICATED_SOURCE);
+  if (fabricatedMatch) issues.push({ field: 'body', message: `Contains fabricated library-internal code (cites a node_modules/dist source path): "${fabricatedMatch[0].trim()}"` });
 
   const linked = extractInternalLinkSlugs(body);
   const livingSlugs = new Set(inventory.all.map((i) => i.slug));

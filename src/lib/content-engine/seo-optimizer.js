@@ -87,17 +87,25 @@ function keywordCandidates(item, classification) {
 
 function ensureRelatedSection(body, suggestions) {
   if (suggestions.length === 0) return { changed: false, body };
+  // Preserve the file's dominant line ending. CRLF files break a LF-only list
+  // regex (items end in \r\n, not \n) — the new link would jump above the list
+  // and line endings would get mixed. Detect and match both.
+  const nl = /\r\n/.test(body) ? '\r\n' : '\n';
   const hasRelatedHeading = /^##\s+Related\b/m.test(body);
-  const links = suggestions.map((s) => `- ${anchorFor(s)}`).join('\n');
   if (hasRelatedHeading) {
     const linkedSlugs = extractInternalLinkSlugs(body);
     const newOnes = suggestions.filter((s) => !linkedSlugs.has(s.slug));
     if (newOnes.length === 0) return { changed: false, body };
-    const additions = newOnes.map((s) => `- ${anchorFor(s)}`).join('\n');
-    const patched = body.replace(/(##\s+Related[^\n]*\n+(?:- .*\n)*)/, (match) => `${match.trimEnd()}\n${additions}\n`);
+    const additions = newOnes.map((s) => `- ${anchorFor(s)}`).join(nl);
+    const patched = body.replace(
+      /(##\s+Related[^\r\n]*(?:\r?\n)+(?:-[^\r\n]*(?:\r?\n)+)*)/,
+      (match) => `${match.replace(/\s+$/, '')}${nl}${additions}${nl}`,
+    );
+    if (patched === body) return { changed: false, body };
     return { changed: true, body: patched, added: newOnes.length };
   }
-  const block = `\n\n## Related\n\n${links}\n`;
+  const links = suggestions.map((s) => `- ${anchorFor(s)}`).join(nl);
+  const block = `${nl}${nl}## Related${nl}${nl}${links}${nl}`;
   return { changed: true, body: body.trimEnd() + block, added: suggestions.length };
 }
 
