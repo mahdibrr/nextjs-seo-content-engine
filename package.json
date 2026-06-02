@@ -1,0 +1,19 @@
+{
+  "name": "nextjs-seo-content-engine",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Autonomous SEO content engine for Next.js blogs — pillar taxonomy, keyword clustering, internal linking, content scoring, GSC sync, and AI-powered article generation.",
+  "keywords": ["nextjs", "seo", "content-engine", "ai-content", "blog-automation", "google-search-console", "keyword-clustering", "internal-linking", "mdx"],
+  "license": "MIT",
+  "scripts": {
+    "seo:score": "node scripts/seo-score.js",
+    "seo:optimize": "node scripts/seo-optimize.js",
+    "seo:optimize:apply": "node scripts/seo-optimize.js --apply",
+    "gsc:sync": "node scripts/gsc-sync.js",
+    "content:opportunities": "node scripts/content-opportunities.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "gray-matter": "^4.0.3"
+  }
+}

@@ -1,0 +1,11 @@
+node_modules/
+.env
+.env.local
+data/gsc.json
+content/drafts/
+content/rejected/
+content/review-pending/
+docs/seo-report.json
+docs/content-opportunities.json
+docs/orphan-report.json
+docs/topic-authority.json
